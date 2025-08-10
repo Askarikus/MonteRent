@@ -1,0 +1,138 @@
+services:
+  python-scrap-telegram:
+    build: ./docker/python-scrap-telegram
+    container_name:  ${PROJECT_NAME}-python-scrap-telegram
+    restart: always
+    working_dir: /home/askar/python-scrap-telegram
+    environment:
+      - TZ=Europe/Podgorica
+    depends_on:
+      - postgres
+      - php-fpm
+    volumes:
+      - ./python-scrap-telegram:/home/askar/python-scrap-telegram
+      - ./python-scrap-telegram/logs:/home/askar/python-scrap-telegram/logs
+    networks:
+      - monte-rent-network
+  nginx:
+    image: $NGINX_IMAGE
+    container_name: ${PROJECT_NAME}-nginx
+    restart: always
+    environment:
+      - TZ=Europe/Podgorica
+    networks:
+      - monte-rent-network
+    depends_on:
+      - php-fpm
+    ports:
+      - '8080:80'
+    working_dir: /var/www/monte-rent
+    volumes:
+      - ./monte-rent:/var/www/monte-rent
+      - ./python-scrap-telegram/downloads:/var/www/monte-rent/public/graph
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./logs/nginx:/var/log/nginx/
+  php-fpm:
+    build: ./docker/php-fpm
+    container_name:  ${PROJECT_NAME}-app-fpm
+    restart: always
+    environment:
+      - TZ=Europe/Podgorica
+    depends_on:
+      - postgres
+    volumes:
+      - ./monte-rent:/var/www/monte-rent
+      - ./python-scrap-telegram/downloads:/var/www/monte-rent/public/downloads
+      - ./docker/php-fpm/conf.d/custom-dev.ini:/usr/local/etc/php/conf.d/custom.ini
+    networks:
+      - monte-rent-network
+  php-cli:
+    build: ./docker/php-cli
+    user: "1000:1000"
+    container_name:  ${PROJECT_NAME}-app-cli
+    restart: on-failure
+    tty: true
+    stdin_open: true
+    environment:
+      - TZ=Europe/Podgorica
+    depends_on:
+      - php-fpm
+    volumes:
+      - ./monte-rent:/var/www/monte-rent
+      - ./python-scrap-telegram/downloads:/var/www/monte-rent/public/downloads
+      - ./docker/php-cli/conf.d/custom-dev.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./docker/php-cli/askar/.zshrc:/home/askar/.zshrc
+      - ./docker/php-cli/askar/.zsh_history:/home/askar/.zsh_history
+    networks:
+      - monte-rent-network
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"
+  postgres:
+    image: $POSTGRES_IMAGE
+    restart: always
+    container_name: ${PROJECT_NAME}-db
+    environment:
+        POSTGRES_USER: ${DB_USER}
+        POSTGRES_PASSWORD: ${DB_PASSWORD}
+        POSTGRES_DB: ${DB_DATABASE}
+        TZ: Europe/Podgorica
+    ports:
+        - 54321:5432
+    networks:
+        - monte-rent-network
+    volumes:
+        - ./docker/db/data:/var/lib/postgresql/data:rw
+  node-js:
+    image: $NODE_IMAGE
+    environment:
+      - TZ=Europe/Podgorica
+    volumes:
+        - ./monte-rent:/var/www/monte-rent
+    restart: always
+    tty: true
+    container_name: ${PROJECT_NAME}-nodejs
+    working_dir: /var/www/monte-rent
+    networks:
+        - monte-rent-network
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    user: "10001:10001"  # Changed to standard Loki user
+    volumes:
+      - loki_data:/loki  # Changed to named volume
+      - ./docker/loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
+    environment:
+      - LOKI_UID=10001
+      - LOKI_GID=10001
+      - TZ=Europe/Podgorica
+    container_name: ${PROJECT_NAME}-loki
+    networks:
+      - monte-rent-network
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ./monte-rent/var/log:/var/www/monte-rent/var/log:ro
+      - ./python-scrap-telegram/logs:/var/python-scrap-telegram/logs:ro
+      - ./logs/nginx:/var/logs/nginx:ro
+      - ./docker/promtail/promtail-config.yaml:/etc/promtail/config.yaml:ro
+    command: -config.file=/etc/promtail/config.yaml
+    environment:
+      - TZ=Europe/Podgorica
+    container_name: ${PROJECT_NAME}-promtail
+    networks:
+      - monte-rent-network
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+networks:
+  monte-rent-network:
+    name: monte-rent-network
+
+volumes:
+  loki_data:  # Added named volume for Loki persistence

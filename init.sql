@@ -1,0 +1,10 @@
+CREATE TABLE ads_records (
+  id_hash VARCHAR(20) NOT NULL PRIMARY KEY,
+  type_sell_or_rent NOT NULL VARCHAR(10) NOT NULL,
+  city NOT NULL VARCHAR(10) NOT NULL,
+  message_text NOT NULL VARCHAR(10000) NOT NULL,
+  photo_path NOT NULL VARCHAR(255) NOT NULL,
+  price DECIMAL(10, 5),
+  created_at NOT NULL DATETIME NOT NULL,
+  updated_at NOT NULL DATETIME NOT NULL,
+);

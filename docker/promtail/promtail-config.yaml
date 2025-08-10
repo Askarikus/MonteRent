@@ -1,0 +1,101 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+- job_name: symfony
+  static_configs:
+  - targets: [localhost]
+    labels:
+      job: symfony
+      app: monte-rent
+      __path__: /var/www/monte-rent/var/log/*.log
+  pipeline_stages:
+  - match:
+      selector: '{job="symfony"}'
+      stages:
+      - regex:
+          expression: '^\[(?P<timestamp>[\d\-]+ [\d:,]+)\] (?P<logger>\w+)\.(?P<level>\w+): (?P<message>.*)'
+      - timestamp:
+          format: "2006-01-02 15:04:05"
+          source: timestamp
+      - labels:
+          symfony:
+- job_name: access
+  static_configs:
+  - targets: [localhost]
+    labels:
+      job: access
+      app: monte-rent
+      __path__: /var/logs/nginx/access_monte_rent_80.log
+  pipeline_stages:
+  - match:
+      selector: '{job="access"}'
+      stages:
+      - regex:
+          expression: '^(?P<remote_addr>\S+) - (?P<remote_user>\S+) \[(?P<timestamp>[^\]]+)\] "(?P<request>[^"]+)" (?P<status>\d+) (?P<body_bytes_sent>\d+) "(?P<http_referer>[^"]*)" "(?P<http_user_agent>[^"]*)"'
+      - timestamp:
+          format: "02/Jan/2006:15:04:05 -0700"
+          source: timestamp
+      - labels:
+          nginx:
+- job_name: script
+  static_configs:
+  - targets: [localhost]
+    labels:
+      job: script
+      app: monte-rent
+      __path__: /var/logs/nginx/scripts_monte_rent_80.log
+  pipeline_stages:
+  - match:
+      selector: '{job="scripts"}'
+      stages:
+      - regex:
+          expression: '^\[(?P<timestamp>[^\]]+)\] (?P<path>\S+) - (?P<script>\S+) > (?P<method>\S+) (?P<request>\S+) (?P<http_version>HTTP/\d+\.\d+)'
+      - timestamp:
+          format: "02/Jan/2006:15:04:05 -0700"
+          source: timestamp
+      - labels:
+          nginx:
+- job_name: errors
+  static_configs:
+  - targets: [localhost]
+    labels:
+      job: errors
+      app: monte-rent
+      __path__: /var/logs/nginx/error_monte_rent_80.log
+  pipeline_stages:
+  - match:
+      selector: '{job="errors"}'
+      stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) \[(?P<level>\w+)\] (?P<process_id>\d+#\d+): \*(?P<connection_id>\d+) (?P<error_message>[^,]+), client: (?P<client_ip>[^,]+), server: (?P<server>[^,]+), request: "(?P<request>[^"]+)", upstream: "(?P<upstream>[^"]+)", host: "(?P<host>[^"]+)"(?:, referrer: "(?P<referrer>[^"]+)")?'
+      - timestamp:
+          format: "2006/01/02 15:04:05"
+          source: timestamp
+      - labels:
+          nginx:
+- job_name: python-scrap-telegram
+  static_configs:
+  - targets: [localhost]
+    labels:
+      job: python-scrap-telegram
+      app: monte-rent
+      __path__: /var/python-scrap-telegram/logs/python-scrap-telegram.log
+  pipeline_stages:
+  - match:
+      selector: '{job="python-scrap-telegram"}'
+      stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - (?P<level>\w+) - (?P<message>.*)'
+      - timestamp:
+          format: "2006-01-02 15:04:05,000"
+          source: timestamp
+      - labels:
+          python:

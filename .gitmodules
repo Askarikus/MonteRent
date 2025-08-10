@@ -1,0 +1,6 @@
+[submodule "python-scrap-telegram"]
+	path = python-scrap-telegram
+    url  = git@github.com:Askarikus/barsk-python-scrap-telegram.git
+[submodule "monte-rent"]
+	path = monte-rent
+    url  = git@github.com:Askarikus/barsk-monte-rent.git
