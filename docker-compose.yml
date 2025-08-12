@@ -36,6 +36,7 @@ services:
   php-fpm:
     build: ./docker/php-fpm
     container_name:  ${PROJECT_NAME}-app-fpm
+    user: "${MY_USER_ID}:${MY_USER_ID}"
     restart: always
     environment:
       - TZ=Europe/Podgorica
@@ -49,7 +50,7 @@ services:
       - monte-rent-network
   php-cli:
     build: ./docker/php-cli
-    user: "1000:1000"
+    user: "${MY_USER_ID}:${MY_USER_ID}"
     container_name:  ${PROJECT_NAME}-app-cli
     restart: on-failure
     tty: true
