@@ -1,6 +1,6 @@
 services:
   python-scrap-telegram:
-    build: ./docker/python-scrap-telegram
+    build: ./docker/python-scrap-telegram-docker
     container_name:  ${PROJECT_NAME}-python-scrap-telegram
     restart: always
     working_dir: /home/askar/python-scrap-telegram
