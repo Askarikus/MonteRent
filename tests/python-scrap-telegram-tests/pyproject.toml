@@ -1,0 +1,11 @@
+[project]
+name = "first_trying_telephon_scrap_telegram"
+version = "0.1.0"
+description = "A Python app using Telethon, managed by uv."
+authors = ["Your Name <askarikus23@gmail.com>"]
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "telethon==1.28.5",
+    "python-dotenv==1.0.1",
+]
