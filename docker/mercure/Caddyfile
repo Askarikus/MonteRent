@@ -1,0 +1,26 @@
+{
+	# Optional: disable admin API
+	admin off
+}
+
+:80 {
+	log
+
+	# Health endpoint for container checks
+	respond /healthz 200
+
+	route {
+		mercure {
+			# Use env-provided keys
+			publisher_jwt {$MERCURE_PUBLISHER_JWT_KEY}
+			subscriber_jwt {$MERCURE_SUBSCRIBER_JWT_KEY}
+
+			# Allow anonymous subscribers (no JWT for SSE)
+			anonymous
+
+			# CORS and allowed publish origins
+			cors_origins *
+			publish_origins *
+		}
+	}
+}
