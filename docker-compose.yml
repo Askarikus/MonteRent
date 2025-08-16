@@ -139,14 +139,9 @@ services:
     volumes:
       - ./docker/mercure/Caddyfile:/etc/caddy/Caddyfile:ro
     environment:
-      # JWT keys for publisher/subscriber (HMAC or RSA public for subscriber)
       MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_PUBLISHER_JWT_KEY}
       MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_SUBSCRIBER_JWT_KEY}
-      # SERVER_NAME: ":80"
-      # Disable demo UI
-      # DEMO: "0"
     healthcheck:
-      # Use explicit health endpoint from custom Caddyfile
       test: ["CMD", "wget", "--spider", "-q", "http://localhost/healthz"]
       interval: 10s
       timeout: 5s
