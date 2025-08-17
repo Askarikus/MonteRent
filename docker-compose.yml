@@ -9,9 +9,31 @@ services:
     depends_on:
       - postgres
       - php-fpm
+      - rabbitmq
     volumes:
       - ./python-scrap-telegram:/home/askar/python-scrap-telegram
       - ./python-scrap-telegram/logs:/home/askar/python-scrap-telegram/logs
+    networks:
+      - monte-rent-network
+  python-parse-original-message:
+    build: ./docker/python-parse-original-message-docker
+    container_name:  ${PROJECT_NAME}-python-parse-original-message
+    restart: always
+    working_dir: /home/askar/python-parse-original-message
+    environment:
+      - TZ=Europe/Podgorica
+      - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq}
+      - RABBITMQ_PORT=${RABBITMQ_PORT:-5672}
+      - RABBITMQ_USER=${RABBITMQ_USER:-guest}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-guest}
+      - RABBITMQ_VHOST=${RABBITMQ_VHOST:-/}
+      - RABBITMQ_QUEUE=${RABBITMQ_QUEUE:-to_parse_by_python_ai_agent}
+    depends_on:
+      - postgres
+      - php-fpm
+    volumes:
+      - ./python-parse-original-message:/home/askar/python-parse-original-message
+      - ./python-parse-original-message/logs:/home/askar/python-parse-original-message/logs
     networks:
       - monte-rent-network
   nginx:
@@ -40,8 +62,10 @@ services:
     restart: always
     environment:
       - TZ=Europe/Podgorica
+      - MESSENGER_TRANSPORT_DSN=amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672/%2f
     depends_on:
       - postgres
+      - rabbitmq
     volumes:
       - ./monte-rent:/var/www/monte-rent
       - ./python-scrap-telegram/downloads:/var/www/monte-rent/public/downloads
@@ -57,8 +81,10 @@ services:
     stdin_open: true
     environment:
       - TZ=Europe/Podgorica
+      - MESSENGER_TRANSPORT_DSN=amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672/%2f
     depends_on:
       - php-fpm
+      - rabbitmq
     volumes:
       - ./monte-rent:/var/www/monte-rent
       - ./python-scrap-telegram/downloads:/var/www/monte-rent/public/downloads
@@ -130,6 +156,20 @@ services:
     depends_on:
       - loki
     restart: unless-stopped
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: ${PROJECT_NAME}-rabbitmq
+    restart: always
+    environment:
+      - TZ=Europe/Podgorica
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-guest}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-guest}
+      - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_VHOST:-/}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - monte-rent-network
   mercure:
     image: dunglas/mercure:v0.15
     restart: unless-stopped
