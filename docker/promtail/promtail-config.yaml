@@ -25,6 +25,7 @@ scrape_configs:
       - timestamp:
           format: "2006-01-02 15:04:05"
           source: timestamp
+          location: "Europe/Berlin"
       - labels:
           symfony:
 - job_name: access
@@ -79,6 +80,7 @@ scrape_configs:
       - timestamp:
           format: "2006/01/02 15:04:05"
           source: timestamp
+          location: "Europe/Berlin"
       - labels:
           nginx:
 - job_name: python-scrap-telegram
@@ -97,6 +99,7 @@ scrape_configs:
       - timestamp:
           format: "2006-01-02 15:04:05,000"
           source: timestamp
+          location: "Europe/Berlin"
       - labels:
           python:
 - job_name: python-parse-original-message
@@ -115,5 +118,6 @@ scrape_configs:
       - timestamp:
           format: "2006-01-02 15:04:05,000"
           source: timestamp
+          location: "Europe/Berlin"
       - labels:
           python:
