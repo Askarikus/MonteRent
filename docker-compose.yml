@@ -145,6 +145,7 @@ services:
     volumes:
       - ./monte-rent/var/log:/var/www/monte-rent/var/log:ro
       - ./python-scrap-telegram/logs:/var/python-scrap-telegram/logs:ro
+      - ./python-parse-original-message/logs:/var/python-parse-original-message/logs:ro
       - ./logs/nginx:/var/logs/nginx:ro
       - ./docker/promtail/promtail-config.yaml:/etc/promtail/config.yaml:ro
     command: -config.file=/etc/promtail/config.yaml
