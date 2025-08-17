@@ -1,6 +1,9 @@
 [submodule "python-scrap-telegram"]
 	path = python-scrap-telegram
     url  = git@github.com:Askarikus/monte-rent-python-scrap-telegram.git
+[submodule "python-parse-original-message"]
+	path = python-parse-original-message
+    url  = git@github.com:Askarikus/python-parse-ai-original-message.git
 [submodule "monte-rent"]
 	path = monte-rent
     url  = git@github.com:Askarikus/monte-rent-inner-symfony.git
