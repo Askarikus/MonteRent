@@ -33,6 +33,25 @@ plugins=(
   vscode
 )
 
+if [ ! -d "$ZSH" ]; then
+  git clone https://github.com/ohmyzsh/ohmyzsh.git "$ZSH"
+fi
+
+# Ensure external plugins exist
+for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
+  target="$ZSH/custom/plugins/$plugin"
+  if [ ! -d "$target" ]; then
+    case "$plugin" in
+      zsh-autosuggestions)
+        git clone https://github.com/zsh-users/zsh-autosuggestions "$target"
+        ;;
+      zsh-syntax-highlighting)
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting "$target"
+        ;;
+    esac
+  fi
+done
+
 source "$ZSH/oh-my-zsh.sh"
 
 # Настройки autosuggestions (опционально подстройте цвет)
