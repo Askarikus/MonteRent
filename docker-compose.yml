@@ -73,9 +73,13 @@ services:
     networks:
       - monte-rent-network
   php-cli:
-    build: ./docker/php-cli
-    user: "${MY_USER_ID}:${MY_USER_ID}"
-    container_name:  ${PROJECT_NAME}-app-cli
+    build:
+      context: ./docker/php-cli
+      args:
+        UID: ${MY_USER_ID:-1000}
+        GID: ${MY_GROUP_ID:-1000}
+    # user: "${MY_USER_ID}:${MY_USER_ID}"   # НЕ НУЖЕН — USER задаётся в образе
+    container_name: ${PROJECT_NAME}-app-cli
     restart: on-failure
     tty: true
     stdin_open: true
@@ -89,8 +93,8 @@ services:
       - ./monte-rent:/var/www/monte-rent
       - ./python-scrap-telegram/downloads:/var/www/monte-rent/public/downloads
       - ./docker/php-cli/conf.d/custom-dev.ini:/usr/local/etc/php/conf.d/custom.ini
-      - ./docker/php-cli/askar/.zshrc:/home/askar/.zshrc
-      - ./docker/php-cli/askar/.zsh_history:/home/askar/.zsh_history
+      # Монтируем весь дом — чтобы .zshrc/.zsh_history совпадали по путям
+      - ./docker/php-cli/askar:/home/askar
     networks:
       - monte-rent-network
     extra_hosts:
