@@ -93,8 +93,8 @@ services:
       - ./monte-rent:/var/www/monte-rent
       - ./python-scrap-telegram/downloads:/var/www/monte-rent/public/downloads
       - ./docker/php-cli/conf.d/custom-dev.ini:/usr/local/etc/php/conf.d/custom.ini
-      # Монтируем весь дом — чтобы .zshrc/.zsh_history совпадали по путям
-      - ./docker/php-cli/askar:/home/askar
+      - ./docker/php-cli/askar/.zshrc:/home/askar/.zshrc
+      - ./docker/php-cli/askar/.zsh_history:/home/askar/.zsh_history
     networks:
       - monte-rent-network
     extra_hosts:
