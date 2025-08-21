@@ -18,7 +18,7 @@ RUN sh /uv-installer.sh && rm /uv-installer.sh
 # Ensure the installed binary is on the `PATH`
 ENV PATH="/root/.local/bin/:$PATH"
 
-WORKDIR /home/askar/python-file-loop
+WORKDIR /home/askar/python-scrap-telegram
 
 COPY requirements.txt .
 
