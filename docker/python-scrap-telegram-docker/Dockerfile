@@ -25,4 +25,4 @@ COPY requirements.txt .
 # Use uv to install dependencies
 RUN uv pip install -r requirements.txt --system
 
-CMD ["python3", "simple_telegram_client.py"]
+CMD ["python3", "parse_telegram_group.py"]
