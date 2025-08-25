@@ -4,6 +4,9 @@
 [submodule "python-parse-original-message"]
 	path = python-parse-original-message
     url  = git@github.com:Askarikus/python-parse-ai-original-message.git
+[submodule "python-download-pictures-related-to-message"]
+	path = python-download-pictures-related-to-message
+    url  = git@github.com:Askarikus/python-download-pictures-related-to-message.git
 [submodule "monte-rent"]
 	path = monte-rent
     url  = git@github.com:Askarikus/monte-rent-inner-symfony.git
