@@ -17,26 +17,34 @@ pull:
 
 # ---------- COMPOSER -----------
 composer-install:
-	docker exec  $(APP_CONTAINER_NAME) sh -c 'composer install --no-scripts'
+	docker exec  $(APP_CLI_CONTAINER_NAME) sh -c 'composer install --no-scripts'
 composer-update:
-	docker exec  $(APP_CONTAINER_NAME) sh -c 'composer update'
+	docker exec  $(APP_CLI_CONTAINER_NAME) sh -c 'composer update'
 composer-require:
-	docker exec  $(APP_CONTAINER_NAME) sh -c 'composer require ${name}'
+	docker exec  $(APP_CLI_CONTAINER_NAME) sh -c 'composer require ${name}'
 composer-dump-autoload:
-	docker exec  $(APP_CONTAINER_NAME) sh -c 'composer dump-autoload'
+	docker exec  $(APP_CLI_CONTAINER_NAME) sh -c 'composer dump-autoload'
 # ----------- COMPOSER END -----------
 
 # PHP CS FIXER commands: ----------------------------------------
 cs-check:
-	docker exec  $(APP_CONTAINER_NAME) sh -c 'vendor/bin/php-cs-fixer fix -vvv --dry-run --show-progress=dots --allow-risky=yes'
+	docker exec  $(APP_CLI_CONTAINER_NAME) sh -c 'vendor/bin/php-cs-fixer fix -vvv --dry-run --show-progress=dots --allow-risky=yes'
 
 cs-fix:
-	docker exec  $(APP_CONTAINER_NAME) sh -c 'vendor/bin/php-cs-fixer fix -vvv --show-progress=dots --allow-risky=yes'
+	docker exec  $(APP_CLI_CONTAINER_NAME) sh -c 'vendor/bin/php-cs-fixer fix -vvv --show-progress=dots --allow-risky=yes'
 # _______________________________________________________________
 
 # PHP_STAN commands: --------------------------------------------
 static-analyse:
-	docker exec  $(APP_CONTAINER_NAME) sh -c "vendor/bin/phpstan --memory-limit=-1 --configuration=./phpstan.neon"
+	docker exec  $(APP_CLI_CONTAINER_NAME) sh -c "vendor/bin/phpstan --memory-limit=-1 --configuration=./phpstan.neon"
+# _______________________________________________________________
+
+# PHPUnit commands: ---------------------------------------------
+phpunit:
+	docker exec  $(APP_CLI_CONTAINER_NAME) sh -c 'vendor/bin/phpunit'
+
+phpunit-coverage:
+	docker exec  $(APP_CLI_CONTAINER_NAME) sh -c 'vendor/bin/phpunit --coverage-text'
 # _______________________________________________________________
 
 # ---------- NODE JS -----------
