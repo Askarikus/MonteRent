@@ -7,3 +7,7 @@ docker/php-cli/askar/.zsh_history
 .vscode/settings.json
 downloads
 anon.session
+
+# Ignore local zsh frameworks/plugins
+/docker/php-cli/askar/.oh-my-zsh/
+/docker/php-cli/askar/.zsh/
