@@ -67,3 +67,6 @@ doctrine-schema-update:
 
 zsh:
 	docker exec -it $(APP_CLI_CONTAINER_NAME) /bin/zsh
+
+cache-clear:
+	docker exec -it $(APP_CLI_CONTAINER_NAME) sh -c 'php bin/console cache:clear'
