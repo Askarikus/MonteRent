@@ -1,7 +1,6 @@
--- Enable UUID generation (pgcrypto)
+-- Bootstrap schema and set search_path
 CREATE SCHEMA IF NOT EXISTS public;
 SET search_path TO public;
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Authors
 CREATE TABLE IF NOT EXISTS authors (
