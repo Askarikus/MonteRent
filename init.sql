@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS UNIQ_9BACE7E1C74F2195 ON refresh_tokens (refresh_token);
 
--- Scrapped ads
+-- Scrapped ads (partitioned by month on created_at)
 CREATE TABLE IF NOT EXISTS scrapped_ads (
   id BIGSERIAL NOT NULL,
   author_id BIGINT DEFAULT NULL,
@@ -59,12 +59,79 @@ CREATE TABLE IF NOT EXISTS scrapped_ads (
   created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
   updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
   PRIMARY KEY (id)
-);
-CREATE INDEX IF NOT EXISTS IDX_3EC69B09F675F31B ON scrapped_ads (author_id);
-CREATE UNIQUE INDEX IF NOT EXISTS uniq_scrapped_ads_hash ON scrapped_ads (hash);
+) PARTITION BY RANGE (created_at);
+
+-- Partitioned indexes (создаются как индекс-родитель и будут иметь потомков на партициях)
+CREATE INDEX IF NOT EXISTS idx_scrapped_ads_author_id ON scrapped_ads (author_id);
+CREATE INDEX IF NOT EXISTS idx_scrapped_ads_hash ON scrapped_ads (hash);
+CREATE INDEX IF NOT EXISTS idx_scrapped_ads_city ON scrapped_ads (city);
+CREATE INDEX IF NOT EXISTS idx_scrapped_ads_type ON scrapped_ads (type_sell_or_rent);
+
 COMMENT ON COLUMN scrapped_ads.omitted_by_admin_at IS '(DC2Type:datetime_immutable)';
 COMMENT ON COLUMN scrapped_ads.created_at IS '(DC2Type:datetime_immutable)';
 COMMENT ON COLUMN scrapped_ads.updated_at IS '(DC2Type:datetime_immutable)';
+
+-- Ensure current and next month partitions exist, plus DEFAULT partition
+DO $$
+DECLARE
+  cur_month date := date_trunc('month', now())::date;
+  nxt_month date := (date_trunc('month', now()) + interval '1 month')::date;
+  part_name text;
+BEGIN
+  -- current month
+  part_name := format('scrapped_ads_y%sm%s', to_char(cur_month, 'YYYY'), to_char(cur_month, 'MM'));
+  EXECUTE format($f$
+    CREATE TABLE IF NOT EXISTS %I PARTITION OF scrapped_ads
+    FOR VALUES FROM (%L) TO (%L)
+  $f$, part_name, cur_month::text, (cur_month + interval '1 month')::date::text);
+  -- ensure child indexes exist and are attached
+  EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (author_id)', part_name||'_author_id_idx', part_name);
+  EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (hash)',       part_name||'_hash_idx',       part_name);
+  EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (city)',       part_name||'_city_idx',       part_name);
+  EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (type_sell_or_rent)', part_name||'_type_idx', part_name);
+  -- attach to partitioned indexes (ignore if already attached)
+  BEGIN
+    EXECUTE format('ALTER INDEX idx_scrapped_ads_author_id ATTACH PARTITION %I', part_name||'_author_id_idx');
+  EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN
+    EXECUTE format('ALTER INDEX idx_scrapped_ads_hash ATTACH PARTITION %I', part_name||'_hash_idx');
+  EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN
+    EXECUTE format('ALTER INDEX idx_scrapped_ads_city ATTACH PARTITION %I', part_name||'_city_idx');
+  EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN
+    EXECUTE format('ALTER INDEX idx_scrapped_ads_type ATTACH PARTITION %I', part_name||'_type_idx');
+  EXCEPTION WHEN duplicate_object THEN NULL; END;
+
+  -- next month
+  part_name := format('scrapped_ads_y%sm%s', to_char(nxt_month, 'YYYY'), to_char(nxt_month, 'MM'));
+  EXECUTE format($f$
+    CREATE TABLE IF NOT EXISTS %I PARTITION OF scrapped_ads
+    FOR VALUES FROM (%L) TO (%L)
+  $f$, part_name, nxt_month::text, (nxt_month + interval '1 month')::date::text);
+  -- ensure child indexes exist and are attached
+  EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (author_id)', part_name||'_author_id_idx', part_name);
+  EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (hash)',       part_name||'_hash_idx',       part_name);
+  EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (city)',       part_name||'_city_idx',       part_name);
+  EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (type_sell_or_rent)', part_name||'_type_idx', part_name);
+  -- attach to partitioned indexes (ignore if already attached)
+  BEGIN
+    EXECUTE format('ALTER INDEX idx_scrapped_ads_author_id ATTACH PARTITION %I', part_name||'_author_id_idx');
+  EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN
+    EXECUTE format('ALTER INDEX idx_scrapped_ads_hash ATTACH PARTITION %I', part_name||'_hash_idx');
+  EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN
+    EXECUTE format('ALTER INDEX idx_scrapped_ads_city ATTACH PARTITION %I', part_name||'_city_idx');
+  EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN
+    EXECUTE format('ALTER INDEX idx_scrapped_ads_type ATTACH PARTITION %I', part_name||'_type_idx');
+  EXCEPTION WHEN duplicate_object THEN NULL; END;
+
+  -- default partition as a safety net
+  EXECUTE 'CREATE TABLE IF NOT EXISTS scrapped_ads_default PARTITION OF scrapped_ads DEFAULT';
+END
+$$;
 
 -- Translations
 CREATE TABLE IF NOT EXISTS translations (
