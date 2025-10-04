@@ -189,6 +189,8 @@ services:
       - monte-rent-network
     ports:
       - 6379:6379
+    environment:
+      - TZ=Europe/Podgorica
   mercure:
     image: dunglas/mercure:v0.15
     restart: unless-stopped

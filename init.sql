@@ -84,6 +84,11 @@ BEGIN
     CREATE TABLE IF NOT EXISTS %I PARTITION OF scrapped_ads
     FOR VALUES FROM (%L) TO (%L)
   $f$, part_name, cur_month::text, (cur_month + interval '1 month')::date::text);
+  -- ensure child partition has DEFAULT for id (auto-increment via parent sequence)
+  EXECUTE format(
+    'ALTER TABLE %I ALTER COLUMN id SET DEFAULT nextval(''public.scrapped_ads_id_seq''::regclass)',
+    part_name
+  );
   -- ensure child indexes exist and are attached
   EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (author_id)', part_name||'_author_id_idx', part_name);
   EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (hash)',       part_name||'_hash_idx',       part_name);
@@ -109,6 +114,11 @@ BEGIN
     CREATE TABLE IF NOT EXISTS %I PARTITION OF scrapped_ads
     FOR VALUES FROM (%L) TO (%L)
   $f$, part_name, nxt_month::text, (nxt_month + interval '1 month')::date::text);
+  -- ensure child partition has DEFAULT for id (auto-increment via parent sequence)
+  EXECUTE format(
+    'ALTER TABLE %I ALTER COLUMN id SET DEFAULT nextval(''public.scrapped_ads_id_seq''::regclass)',
+    part_name
+  );
   -- ensure child indexes exist and are attached
   EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (author_id)', part_name||'_author_id_idx', part_name);
   EXECUTE format('CREATE INDEX IF NOT EXISTS %I ON %I (hash)',       part_name||'_hash_idx',       part_name);
@@ -130,6 +140,8 @@ BEGIN
 
   -- default partition as a safety net
   EXECUTE 'CREATE TABLE IF NOT EXISTS scrapped_ads_default PARTITION OF scrapped_ads DEFAULT';
+  -- ensure default partition has DEFAULT for id as well
+  EXECUTE 'ALTER TABLE scrapped_ads_default ALTER COLUMN id SET DEFAULT nextval(''public.scrapped_ads_id_seq''::regclass)';
 END
 $$;
 
