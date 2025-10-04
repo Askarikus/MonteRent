@@ -181,6 +181,14 @@ services:
       - "15672:15672"
     networks:
       - monte-rent-network
+  redis:
+    image: $REDIS_IMAGE
+    container_name: ${PROJECT_NAME}-redis
+    command: redis-server --appendonly yes --replica-read-only no
+    networks:
+      - monte-rent-network
+    ports:
+      - 6379:6379
   mercure:
     image: dunglas/mercure:v0.15
     restart: unless-stopped
