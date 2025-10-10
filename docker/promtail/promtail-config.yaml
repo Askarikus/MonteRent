@@ -44,6 +44,7 @@ scrape_configs:
       - timestamp:
           format: "02/Jan/2006:15:04:05 -0700"
           source: timestamp
+          location: "Europe/Berlin"
       - labels:
           nginx:
 - job_name: script
@@ -62,6 +63,7 @@ scrape_configs:
       - timestamp:
           format: "02/Jan/2006:15:04:05 -0700"
           source: timestamp
+          location: "Europe/Berlin"
       - labels:
           nginx:
 - job_name: errors

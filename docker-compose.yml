@@ -5,7 +5,7 @@ services:
     restart: always
     working_dir: /home/askar/python-scrap-telegram
     environment:
-      - TZ=Europe/Podgorica
+      - TZ=Europe/Berlin
       - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq}
       - RABBITMQ_PORT=${RABBITMQ_PORT:-5672}
       - RABBITMQ_USER=${RABBITMQ_USER:-guest}
@@ -27,7 +27,7 @@ services:
     restart: always
     working_dir: /home/askar/python-parse-original-message
     environment:
-      - TZ=Europe/Podgorica
+      - TZ=Europe/Berlin
       - RABBITMQ_HOST=${RABBITMQ_HOST:-rabbitmq}
       - RABBITMQ_PORT=${RABBITMQ_PORT:-5672}
       - RABBITMQ_USER=${RABBITMQ_USER:-guest}
@@ -47,7 +47,7 @@ services:
     container_name: ${PROJECT_NAME}-nginx
     restart: always
     environment:
-      - TZ=Europe/Podgorica
+      - TZ=Europe/Berlin
     networks:
       - monte-rent-network
     depends_on:
@@ -67,7 +67,7 @@ services:
     user: "${MY_USER_ID}:${MY_USER_ID}"
     restart: always
     environment:
-      - TZ=Europe/Podgorica
+      - TZ=Europe/Berlin
       - MESSENGER_TRANSPORT_DSN=amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672/%2f
     depends_on:
       - postgres
@@ -90,7 +90,7 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - TZ=Europe/Podgorica
+      - TZ=Europe/Berlin
       - MESSENGER_TRANSPORT_DSN=amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672/%2f
     depends_on:
       - php-fpm
@@ -113,7 +113,7 @@ services:
         POSTGRES_USER: ${DB_USER}
         POSTGRES_PASSWORD: ${DB_PASSWORD}
         POSTGRES_DB: ${DB_DATABASE}
-        TZ: Europe/Podgorica
+        TZ: Europe/Berlin
     ports:
         - 54321:5432
     networks:
@@ -123,7 +123,7 @@ services:
   node-js:
     image: $NODE_IMAGE
     environment:
-      - TZ=Europe/Podgorica
+      - TZ=Europe/Berlin
     volumes:
         - ./monte-rent:/var/www/monte-rent
     restart: always
@@ -144,7 +144,7 @@ services:
     environment:
       - LOKI_UID=10001
       - LOKI_GID=10001
-      - TZ=Europe/Podgorica
+      - TZ=Europe/Berlin
     container_name: ${PROJECT_NAME}-loki
     networks:
       - monte-rent-network
@@ -160,7 +160,7 @@ services:
       - ./docker/promtail/promtail-config.yaml:/etc/promtail/config.yaml:ro
     command: -config.file=/etc/promtail/config.yaml
     environment:
-      - TZ=Europe/Podgorica
+      - TZ=Europe/Berlin
     container_name: ${PROJECT_NAME}-promtail
     networks:
       - monte-rent-network
@@ -172,7 +172,7 @@ services:
     container_name: ${PROJECT_NAME}-rabbitmq
     restart: always
     environment:
-      - TZ=Europe/Podgorica
+      - TZ=Europe/Berlin
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-guest}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-guest}
       - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_VHOST:-/}
@@ -190,7 +190,7 @@ services:
     ports:
       - 6379:6379
     environment:
-      - TZ=Europe/Podgorica
+      - TZ=Europe/Berlin
   mercure:
     image: dunglas/mercure:v0.15
     restart: unless-stopped
